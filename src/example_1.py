@@ -20,7 +20,8 @@ from scipy.cluster.hierarchy import dendrogram, linkage, fcluster, cut_tree
 from scipy.spatial.distance import pdist, squareform
 from sklearn.cluster import AgglomerativeClustering
 import scipy.cluster.hierarchy as sch
-
+# pca
+from sklearn.decomposition import PCA
 
 
 import IPython
@@ -272,6 +273,37 @@ model = KMeans()
 visualizer = KElbowVisualizer(model, k=(1,9), metric='distortion', timings=False, locate_elbow=True)
 visualizer.fit(surveyquestions3_imputed)
 visualizer.show()
+
+
+# pca on clustering and plotting 
+# we use 3 clusters 
+kmeans = KMeans(n_clusters=3, init='k-means++', n_init=20, random_state=123)
+kmeans.fit(surveyquestions3_imputed)
+# Get cluster sizes
+cluster_sizes = np.bincount(kmeans.labels_)
+print(cluster_sizes)
+#get cluster center
+cluster_centers = kmeans.cluster_centers_
+print(cluster_centers)
+data_std = (surveyquestions3_imputed - surveyquestions3_imputed.mean()) / surveyquestions3_imputed.std()
+n_components = 2
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(data_std)
+loadings = pd.DataFrame(pca.components_.T, columns=[f'PC{i}' for i in range(1, n_components+1)], index=surveyquestions3.columns)
+print(loadings)
+# iterate over labels and color them
+colors = ['red', 'green', 'blue']
+labels = kmeans.labels_
+colors = np.array(['red', 'green', 'blue'])
+color_arr = colors[labels]
+
+
+plt.scatter(X_pca[:,0], X_pca[:,1], c=color_arr)
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.show()
+
+
 
 # plot silhouette for kmeans
 selected_columns = ['SeatComf', 'TimeConvenient', 'Food', 'Gate', 'InflightService', 'Entertainment', 'Support', 'OnlineBooking', 'Service', 'LegRoom', 'Baggage', 'Checkin', 'Clean', 'DelayDepart', 'DelayArrival', 'Age']

@@ -2,3 +2,5 @@ pandas
 ipython
 scikit-learn
 seaborn
+geopandas
+yellowbrick
